@@ -103,19 +103,25 @@ namespace EZSock {
     }
 
     inline ssize_t UDPSocket::send(const SocketAddress_IPv4 & target) const {
+        if(!is_active) return -1;
+
         auto sockaddr_tmp = sockaddr(target);
         return ::sendto(socket, buffer.get_buf_base(), buffer.get_buf_size(), 0, &sockaddr_tmp, sizeof(sockaddr));
     }
 
     inline ssize_t UDPSocket::send(const SocketAddress_IPv4 & target, const Buffer & src_buf) const {
+        if(!is_active) return -1;
+
         auto sockaddr_tmp = sockaddr(target);
         return ::sendto(socket, src_buf.get_buf_base(), src_buf.get_buf_size(), 0, &sockaddr_tmp, sizeof(sockaddr));
     }
 
     inline ssize_t UDPSocket::receive(SocketAddress_IPv4 & target) const {
+        if(!is_active) return -1;
+
         auto sockaddr_tmp = sockaddr();
         auto sockaddr_ptr = &sockaddr_tmp;
-        auto socklen_tmp = socklen_t();
+        auto socklen_tmp = socklen_t(sizeof(sockaddr));
         auto socklen_ptr = &socklen_tmp;
 
         auto res = ::recvfrom(socket, buffer.get_buf_base(), buffer.get_buf_size(), 0, sockaddr_ptr, socklen_ptr);
@@ -126,6 +132,8 @@ namespace EZSock {
     }
 
     inline ssize_t UDPSocket::receive() const {
+        if(!is_active) return -1;
+
         auto sockaddr_tmp = sockaddr();
         auto sockaddr_ptr = &sockaddr_tmp;
         auto socklen_tmp = socklen_t();
@@ -139,6 +147,8 @@ namespace EZSock {
     }
 
     inline SocketAddress_IPv4 UDPSocket::get_socket_address() const noexcept {
+        if(!is_active) return SocketAddress_IPv4();
+
         return socket_address_ipv4;
     }
 
@@ -155,7 +165,7 @@ namespace EZSock {
     }
 
     inline std::ostream & operator<<(std::ostream & ost, const UDPSocket & udp_socket) {
-        ost << udp_socket.socket << " - IPv4 @ " << udp_socket.get_socket_address() << " , ";
+        ost << udp_socket.socket << " - " << udp_socket.get_socket_address() << " , ";
 
         if(udp_socket.is_active) return ost << "active";
         return ost << "closed";

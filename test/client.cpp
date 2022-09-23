@@ -2,10 +2,10 @@
 
 int main() {
     auto client_socket = EZSock::UDPSocket();
-    auto client_address = EZSock::SocketAddress_IPv4("127.0.0.1", 9090);
+    auto client_address = EZSock::SocketAddress_IPv4(AUTO_IPV4_ADDRESS, 8080);
     client_socket.bind(client_address);
 
-    auto server_address = EZSock::SocketAddress_IPv4("127.0.0.1", 10850);
+    auto server_address = EZSock::SocketAddress_IPv4(EZSock::IPv4_Address::cstr_to_ipv4_address("175.24.226.74"), 10750);
 
     client_socket.get_buf_ref() = "Hello, World!";
 

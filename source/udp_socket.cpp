@@ -31,6 +31,12 @@ namespace EZSock {
     // UDPSocket
 
     int UDPSocket::bind(const SocketAddress_IPv4 & address) {
+        if(is_active) return -1;
+
+        is_active = true;
+
+        socket_address_ipv4 = address;
+
         auto sockaddr_tmp = sockaddr();
         auto sockaddr_ptr = &sockaddr_tmp;
         auto sockaddr_in_ptr = (sockaddr_in *)sockaddr_ptr;

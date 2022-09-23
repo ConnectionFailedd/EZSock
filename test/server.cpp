@@ -2,7 +2,7 @@
 
 int main() {
     auto server_socket = EZSock::UDPSocket();
-    auto server_address = EZSock::SocketAddress_IPv4("127.0.0.1", 10850);
+    auto server_address = EZSock::SocketAddress_IPv4(AUTO_IPV4_ADDRESS, 10750);
     server_socket.bind(server_address);
 
     auto client_address = EZSock::SocketAddress_IPv4();

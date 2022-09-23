@@ -21,8 +21,8 @@ namespace EZSock {
 
 /* -------------------------------------------------------------------------------- */
 
-    #define AUTO_IPV4_ADDRESS INADDR_ANY
-    #define UNACCESSIBLE_PORT_NUMBER 0
+    #define AUTO_IPV4_ADDRESS uint32_t(0)
+    #define UNACCESSIBLE_PORT_NUMBER uint16_t(0)
 
 /* -------------------------------------------------------------------------------- */
 
@@ -108,9 +108,7 @@ namespace EZSock {
 
     public:
         // to initialize with a 32-bit integer.
-        inline IPv4_Address(IPv4_Address_t = AUTO_IPV4_ADDRESS) noexcept;
-        // to initialize with an ip string (like "0.0.0.0").
-        inline IPv4_Address(const char *) noexcept;
+        inline IPv4_Address(IPv4_Address_t = IPv4_Address_t(0)) noexcept;
 
         IPv4_Address(const IPv4_Address &) = default;
         IPv4_Address(IPv4_Address &&) = default;
@@ -126,6 +124,9 @@ namespace EZSock {
 
         // to print as "xxx.xxx.xxx.xxx".
         inline friend std::ostream & operator<<(std::ostream &, const IPv4_Address &);
+
+        // to transfer c string to ipv4 address.
+        inline static IPv4_Address cstr_to_ipv4_address(const char *) noexcept;
     };
 
 /* -------------------------------------------------------------------------------- */
@@ -146,14 +147,11 @@ namespace EZSock {
 
         // to transfer from & to sockaddr & sockaddr_in struct (built in) explicitly.
         inline explicit SocketAddress_IPv4(const sockaddr &) noexcept;
-        inline explicit SocketAddress_IPv4(const sockaddr_in &) noexcept;
         inline explicit virtual operator sockaddr() const noexcept override final;
-        inline explicit operator sockaddr_in() const noexcept;
 
     public:
         // to initialize with ip & port.
         inline SocketAddress_IPv4(const IPv4_Address & = AUTO_IPV4_ADDRESS, const IPv4_Port & = UNACCESSIBLE_PORT_NUMBER) noexcept;
-        inline SocketAddress_IPv4(const char *, const IPv4_Port & = UNACCESSIBLE_PORT_NUMBER) noexcept;
 
         SocketAddress_IPv4(const SocketAddress_IPv4 &) = default;
         SocketAddress_IPv4(SocketAddress_IPv4 &&) = default;
@@ -224,10 +222,6 @@ namespace EZSock {
 
     inline IPv4_Address::IPv4_Address(IPv4_Address_t src_ipv4_address) noexcept : ipv4_address(src_ipv4_address) {}
 
-    inline IPv4_Address::IPv4_Address(const char * src_ipv4_str) noexcept {
-        ipv4_address = ntohl(inet_addr(src_ipv4_str));
-    }
-
     inline IPv4_Address::operator IPv4_Address_t() const noexcept {
         return ipv4_address;
     }
@@ -240,43 +234,34 @@ namespace EZSock {
         return ost << inet_ntoa(in_addr(src));
     }
 
+    inline IPv4_Address IPv4_Address::cstr_to_ipv4_address(const char * src_ipv4_str) noexcept {
+        return ntohl(inet_addr(src_ipv4_str));
+    }
+
 /* -------------------------------------------------------------------------------- */
 
     // SocketAddress_IPv4
 
-    inline SocketAddress_IPv4::SocketAddress_IPv4(const sockaddr & src) noexcept {
+    inline SocketAddress_IPv4::SocketAddress_IPv4(const sockaddr & src) noexcept : SocketAddress(SocketAddressFamily::INET) {
         const auto * sockaddr_in_ptr = (sockaddr_in *)&src;
 
         ip = IPv4_Address(sockaddr_in_ptr->sin_addr);
         port = IPv4_Port(htons(sockaddr_in_ptr->sin_port));
     }
 
-    inline SocketAddress_IPv4::SocketAddress_IPv4(const sockaddr_in & src) noexcept : ip(src.sin_addr), port(htons(src.sin_port)) {}
-
     inline SocketAddress_IPv4::operator sockaddr() const noexcept {
         auto res = sockaddr();
 
-        res.sa_family = sa_family_t(get_socket_address_family());
+        auto sockaddr_in_ptr = (sockaddr_in *)&res;
+
+        sockaddr_in_ptr->sin_family = sa_family_t(get_socket_address_family());
+        sockaddr_in_ptr->sin_addr = in_addr(get_ipv4_address());
+        sockaddr_in_ptr->sin_port = htons(get_ipv4_port());
 
         return res;
     }
 
-    inline SocketAddress_IPv4::operator sockaddr_in() const noexcept {
-        auto res = sockaddr_in();
-
-        res.sin_family = sa_family_t(get_socket_address_family());
-        res.sin_addr = in_addr(get_ipv4_address());
-        res.sin_port = htons(get_ipv4_port());
-
-        return res;
-    }
-
-    inline SocketAddress_IPv4::SocketAddress_IPv4(const IPv4_Address & src_ip, const IPv4_Port & src_port) noexcept : ip(src_ip), port(src_port) {}
-
-    inline SocketAddress_IPv4::SocketAddress_IPv4(const char * src_ip_str, const IPv4_Port & src_port) noexcept {
-        ip = ntohl(inet_addr(src_ip_str));
-        port = src_port;
-    }
+    inline SocketAddress_IPv4::SocketAddress_IPv4(const IPv4_Address & src_ip, const IPv4_Port & src_port) noexcept : SocketAddress(SocketAddressFamily::INET), ip(src_ip), port(src_port) {}
 
     inline void SocketAddress_IPv4::set_ipv4_address(const IPv4_Address & src_ip) noexcept {
         ip = src_ip;
@@ -299,7 +284,7 @@ namespace EZSock {
     }
 
     inline std::ostream & operator<<(std::ostream & ost, const SocketAddress_IPv4 & socket_address_ipv4) {
-        return ost << socket_address_ipv4.ip << ":" << socket_address_ipv4.port;
+        return ost << "IPv4@" << socket_address_ipv4.ip << ":" << socket_address_ipv4.port;
     }
 
 /* -------------------------------------------------------------------------------- */
