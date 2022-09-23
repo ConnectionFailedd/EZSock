@@ -86,9 +86,10 @@ namespace EZSock {
 
     std::ostream & operator<<(std::ostream & ost, const Buffer & buffer) {
         for(int i = 0; i < buffer.buf_size; i ++){
-            if(is_print(buffer[i])) std::cout << buffer[i];
-            else std::cout << "਍";
+            if(is_print(buffer[i])) ost << buffer[i];
+            else ost << "਍";
         }
+        return ost;
     }
 
 /* -------------------------------------------------------------------------------- */

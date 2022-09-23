@@ -21,8 +21,11 @@ namespace EZSock {
 
 /* -------------------------------------------------------------------------------- */
 
-    // Buffer
-
+    /*
+     * class Buffer
+     * 
+     * to store data to be sent/received.
+     */
     class Buffer {
     private:
         size_t buf_size;
@@ -45,7 +48,10 @@ namespace EZSock {
 
         // to read contents in buffer.
         // if parameter ranges over, return the last element.
-        inline uint8_t operator[](size_t) const noexcept;
+        inline uint8_t operator[](size_t) const & noexcept;
+        // to read contents in buffer.
+        // if parameter ranges over, return the last element.
+        inline uint8_t operator[](size_t) && noexcept;
 
         // to get size.
         inline size_t get_buf_size() const noexcept;
@@ -58,12 +64,13 @@ namespace EZSock {
         // to copy memory.
         template<typename T>
         size_t copy(const T *, size_t) noexcept;
+        // to copy memory.
         template<typename T, size_t array_size>
         size_t copy(const T (&) [array_size]) noexcept;
 
         // to modify contents in buffer.
         // if parameter ranges over, return reference of the last element.
-        inline uint8_t & operator[](size_t) noexcept;
+        inline uint8_t & operator[](size_t) & noexcept;
 
         // to print as string.
         friend std::ostream & operator<<(std::ostream &, const Buffer &);
@@ -71,7 +78,7 @@ namespace EZSock {
 
 /* -------------------------------------------------------------------------------- */
 
-    // implements of inline functions below.
+    // implements of inline functions.
 
 /* -------------------------------------------------------------------------------- */
 
@@ -99,7 +106,12 @@ namespace EZSock {
         return *this;
     }
 
-    inline uint8_t Buffer::operator[](size_t pos) const noexcept {
+    inline uint8_t Buffer::operator[](size_t pos) && noexcept {
+        if (pos < buf_size) return buf_base[pos];
+        return buf_base[buf_size - 1];
+    }
+
+    inline uint8_t Buffer::operator[](size_t pos) const & noexcept {
         if (pos < buf_size) return buf_base[pos];
         return buf_base[buf_size - 1];
     }
@@ -112,7 +124,7 @@ namespace EZSock {
         return buf_base;
     }
 
-    inline uint8_t & Buffer::operator[](size_t pos) noexcept {
+    inline uint8_t & Buffer::operator[](size_t pos) & noexcept {
         if (pos < buf_size) return buf_base[pos];
         return buf_base[buf_size - 1];
     }

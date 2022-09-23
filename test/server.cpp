@@ -1,16 +1,18 @@
 #include "udp_socket.hpp"
 
 int main() {
-    UDPSocket server_socket;
-    server_socket.bind("0.0.0.0", 10750);
+    auto server_socket = EZSock::UDPSocket();
+    auto server_address = EZSock::SocketAddress_IPv4("127.0.0.1", 10850);
+    server_socket.bind(server_address);
 
-    UDPTarget client;
+    auto client_address = EZSock::SocketAddress_IPv4();
 
     while(1){
-        server_socket.receive(client);
-        server_socket.send(client);
+        server_socket.receive(client_address);
+        server_socket.send(client_address);
 
-        std::cout << client << std::endl;
+        std::cout << "Message from: <" << client_address << ">:" << std::endl;
+        std::cout << server_socket.get_buf().get_buf_base() << std::endl;
     }
 
     server_socket.close();

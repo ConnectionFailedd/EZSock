@@ -25,8 +25,12 @@ namespace EZSock {
 
 /* -------------------------------------------------------------------------------- */
 
-    // UDPSocket
-
+    /*
+     * class UDPSocket
+     * 
+     * encapsulation of c socket interface.
+     * OOP feature makes it simple.
+     */
     class UDPSocket {
     private:
         int socket;
@@ -58,6 +62,9 @@ namespace EZSock {
         inline ssize_t send(const SocketAddress_IPv4 &, const Buffer &) const;
         // to receive datagram from target and store in buffer built in.
         inline ssize_t receive(SocketAddress_IPv4 &) const;
+        // to receive datagram from target and store in buffer built in.
+        // target address will be deserted.
+        inline ssize_t receive() const;
 
         // to get socket.
         inline int get_socket() const noexcept;
@@ -76,7 +83,7 @@ namespace EZSock {
 
 /* -------------------------------------------------------------------------------- */
 
-    // implements of inline functions below.
+    // implements of inline functions.
 
 /* -------------------------------------------------------------------------------- */
 
@@ -96,11 +103,13 @@ namespace EZSock {
     }
 
     inline ssize_t UDPSocket::send(const SocketAddress_IPv4 & target) const {
-        return ::sendto(socket, buffer.get_buf_base(), buffer.get_buf_size(), 0, &sockaddr(target), sizeof(sockaddr));
+        auto sockaddr_tmp = sockaddr(target);
+        return ::sendto(socket, buffer.get_buf_base(), buffer.get_buf_size(), 0, &sockaddr_tmp, sizeof(sockaddr));
     }
 
     inline ssize_t UDPSocket::send(const SocketAddress_IPv4 & target, const Buffer & src_buf) const {
-        return ::sendto(socket, src_buf.get_buf_base(), src_buf.get_buf_size(), 0, &sockaddr(target), sizeof(sockaddr));
+        auto sockaddr_tmp = sockaddr(target);
+        return ::sendto(socket, src_buf.get_buf_base(), src_buf.get_buf_size(), 0, &sockaddr_tmp, sizeof(sockaddr));
     }
 
     inline ssize_t UDPSocket::receive(SocketAddress_IPv4 & target) const {
@@ -111,16 +120,25 @@ namespace EZSock {
 
         auto res = ::recvfrom(socket, buffer.get_buf_base(), buffer.get_buf_size(), 0, sockaddr_ptr, socklen_ptr);
 
-        target = sockaddr_tmp;
+        target = SocketAddress_IPv4(sockaddr_tmp);
 
         return res;
+    }
+
+    inline ssize_t UDPSocket::receive() const {
+        auto sockaddr_tmp = sockaddr();
+        auto sockaddr_ptr = &sockaddr_tmp;
+        auto socklen_tmp = socklen_t();
+        auto socklen_ptr = &socklen_tmp;
+
+        return ::recvfrom(socket, buffer.get_buf_base(), buffer.get_buf_size(), 0, sockaddr_ptr, socklen_ptr);
     }
 
     inline int UDPSocket::get_socket() const noexcept {
         return socket;
     }
 
-    inline SocketAddress_IPv4 UDPSocket::get_socket_address() const {
+    inline SocketAddress_IPv4 UDPSocket::get_socket_address() const noexcept {
         return socket_address_ipv4;
     }
 
@@ -137,9 +155,7 @@ namespace EZSock {
     }
 
     inline std::ostream & operator<<(std::ostream & ost, const UDPSocket & udp_socket) {
-        ost << udp_socket.socket << " - IPv4 @ ";
-        ost << inet_ntoa(in_addr(udp_socket.get_socket_address().get_ipv4_address())) << ":";
-        ost << udp_socket.get_socket_address().get_ipv4_port() << " , ";
+        ost << udp_socket.socket << " - IPv4 @ " << udp_socket.get_socket_address() << " , ";
 
         if(udp_socket.is_active) return ost << "active";
         return ost << "closed";
