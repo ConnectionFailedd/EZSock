@@ -72,8 +72,8 @@ namespace EZSock {
         inline SocketAddress_IPv4 get_socket_address() const noexcept;
         // to get status (true : active, false : closed).
         inline bool get_status() const noexcept;
-        // to get buffer to read.
-        inline Buffer get_buf() const noexcept;
+        // to get const reference of buffer to read.
+        inline const Buffer & get_buf_ref_const() const noexcept;
         // to get reference of buffer for read/write.
         inline Buffer & get_buf_ref() noexcept;
 
@@ -124,7 +124,7 @@ namespace EZSock {
         auto socklen_tmp = socklen_t(sizeof(sockaddr));
         auto socklen_ptr = &socklen_tmp;
 
-        auto res = ::recvfrom(socket, buffer.get_buf_base(), buffer.get_buf_size(), 0, sockaddr_ptr, socklen_ptr);
+        auto res = ::recvfrom(socket, (void *)buffer.get_buf_base(), buffer.get_buf_size(), 0, sockaddr_ptr, socklen_ptr);
 
         target = SocketAddress_IPv4(sockaddr_tmp);
 
@@ -139,7 +139,7 @@ namespace EZSock {
         auto socklen_tmp = socklen_t();
         auto socklen_ptr = &socklen_tmp;
 
-        return ::recvfrom(socket, buffer.get_buf_base(), buffer.get_buf_size(), 0, sockaddr_ptr, socklen_ptr);
+        return ::recvfrom(socket, (void *)buffer.get_buf_base(), buffer.get_buf_size(), 0, sockaddr_ptr, socklen_ptr);
     }
 
     inline int UDPSocket::get_socket() const noexcept {
@@ -156,7 +156,7 @@ namespace EZSock {
         return is_active;
     }
 
-    inline Buffer UDPSocket::get_buf() const noexcept {
+    inline const Buffer & UDPSocket::get_buf_ref_const() const noexcept {
         return buffer;
     }
 
