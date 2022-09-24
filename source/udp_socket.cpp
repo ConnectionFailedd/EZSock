@@ -9,6 +9,7 @@
  */
 
 #include "udp_socket.hpp"
+#include <iostream>
 
 /* -------------------------------------------------------------------------------- */
 
@@ -47,6 +48,13 @@ namespace EZSock {
         sockaddr_in_ptr->sin_family = std::underlying_type_t<SocketAddressFamily>(SocketAddressFamily::INET);
 
         return ::bind(socket, sockaddr_ptr, sizeof(sockaddr));
+    }
+
+    inline std::ostream & operator<<(std::ostream & ost, const UDPSocket & udp_socket) {
+        ost << udp_socket.socket << " - " << udp_socket.get_socket_address() << " , ";
+
+        if(udp_socket.is_active) return ost << "active";
+        return ost << "closed";
     }
 
 /* -------------------------------------------------------------------------------- */

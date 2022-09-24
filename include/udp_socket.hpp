@@ -14,7 +14,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
-#include <iostream>
+#include <iosfwd>
 
 #include "buffer.hpp"
 #include "socket_address.hpp"
@@ -78,7 +78,7 @@ namespace EZSock {
         inline Buffer & get_buf_ref() noexcept;
 
         // to print as "<socket> - IPv4 @ xxx.xxx.xxx.xxx:xxxx , <is_active>"
-        inline friend std::ostream & operator<<(std::ostream &, const UDPSocket &);
+        friend std::ostream & operator<<(std::ostream &, const UDPSocket &);
     };
 
 /* -------------------------------------------------------------------------------- */
@@ -162,13 +162,6 @@ namespace EZSock {
 
     inline Buffer & UDPSocket::get_buf_ref() noexcept {
         return buffer;
-    }
-
-    inline std::ostream & operator<<(std::ostream & ost, const UDPSocket & udp_socket) {
-        ost << udp_socket.socket << " - " << udp_socket.get_socket_address() << " , ";
-
-        if(udp_socket.is_active) return ost << "active";
-        return ost << "closed";
     }
 
 /* -------------------------------------------------------------------------------- */

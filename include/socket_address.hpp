@@ -13,7 +13,7 @@
 
 #include <arpa/inet.h>
 #include <sys/socket.h>
-#include <iostream>
+#include <iosfwd>
 
 /* -------------------------------------------------------------------------------- */
 
@@ -126,7 +126,7 @@ namespace EZSock {
         inline friend std::ostream & operator<<(std::ostream &, const IPv4_Address &);
 
         // to transfer c string to ipv4 address.
-        inline static IPv4_Address cstr_to_ipv4_address(const char *) noexcept;
+        static IPv4_Address cstr_to_ipv4_address(const char *) noexcept;
     };
 
 /* -------------------------------------------------------------------------------- */
@@ -175,7 +175,7 @@ namespace EZSock {
         inline IPv4_Port get_ipv4_port() const noexcept;
 
         // to print as "xxx.xxx.xxx.xxx:xxxx"
-        inline friend std::ostream & operator<<(std::ostream &, const SocketAddress_IPv4 &);
+        friend std::ostream & operator<<(std::ostream &, const SocketAddress_IPv4 &);
     };
 
 /* -------------------------------------------------------------------------------- */
@@ -230,10 +230,6 @@ namespace EZSock {
         return ipv4_address;
     }
 
-    inline std::ostream & operator<<(std::ostream & ost, const IPv4_Address & src) {
-        return ost << inet_ntoa(in_addr(src));
-    }
-
     inline IPv4_Address IPv4_Address::cstr_to_ipv4_address(const char * src_ipv4_str) noexcept {
         return ntohl(inet_addr(src_ipv4_str));
     }
@@ -281,10 +277,6 @@ namespace EZSock {
 
     inline IPv4_Port SocketAddress_IPv4::get_ipv4_port() const noexcept {
         return port;
-    }
-
-    inline std::ostream & operator<<(std::ostream & ost, const SocketAddress_IPv4 & socket_address_ipv4) {
-        return ost << "IPv4@" << socket_address_ipv4.ip << ":" << socket_address_ipv4.port;
     }
 
 /* -------------------------------------------------------------------------------- */
